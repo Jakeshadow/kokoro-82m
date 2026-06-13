@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fix espeak-ng Install Errors — Windows, macOS, Linux Guide</title>
+  <meta name="description" content="Fix espeak-ng installation errors for Kokoro-82M. Step-by-step troubleshooting for Windows PATH issues, macOS Homebrew, Linux packages, and Docker alternatives.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"></noscript>
+  <link rel="stylesheet" href="/css/style.css">
+  <meta property="og:title" content="Fix espeak-ng Install Errors — Windows, macOS, Linux">
+  <meta property="og:description" content="Fix every espeak-ng installation error for Kokoro-82M. Windows PATH, macOS Homebrew, Linux packages, no-audio workaround.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://kokoro82m.com/espeak-ng/">
+  <meta property="og:site_name" content="Kokoro-82M Guide">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fix espeak-ng Install Errors — Windows, macOS, Linux">
+  <meta name="twitter:description" content="Fix every espeak-ng installation error. Windows PATH, macOS Homebrew, Linux, no-audio workaround.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kokoro82m.com/espeak-ng/">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23f97316' width='100' height='100' rx='20'/%3E%3Ctext x='50' y='68' text-anchor='middle' fill='white' font-size='48' font-family='sans-serif' font-weight='bold'%3EK8%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <nav id="nav" class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">Kokoro82M Guide</a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/espeak-ng/">espeak-ng</a></li>
+        <li><a href="/docker/">Docker</a></li>
+        <li><a href="/onnx/">ONNX</a></li>
+        <li><a href="/#faq">FAQ</a></li>
+      </ul>
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-badge">espeak-ng · Troubleshooting</div>
+        <h1>Fix espeak-ng Install Errors for Kokoro-82M</h1>
+        <p class="hero-subtitle">The #1 Kokoro setup blocker. Windows PATH, macOS Homebrew, Linux packages, and the no-install workaround.</p>
+        <div class="hero-actions">
+          <a href="#windows" class="btn btn-primary">Windows Fix</a>
+          <a href="#workaround" class="btn btn-outline">Skip It (ONNX)</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="why" class="section">
+      <div class="container">
+        <h2>Why espeak-ng Blocks Kokoro</h2>
+        <p class="section-lead">Kokoro uses espeak-ng as its phoneme generator — it converts text into phonemes (speech sounds) before the neural model turns them into audio. Without espeak-ng, Kokoro's Python pipeline crashes with <code>OSError: espeak-ng not found</code> or <code>subprocess.CalledProcessError</code>.</p>
+        <p>The GPL license on espeak-ng is the main reason community developers built the <strong>ONNX path</strong> — it replaces espeak-ng with a pure-ML phoneme encoder, avoiding both the install headache and the licensing concern. If you're stuck after 5 minutes, <a href="/onnx/">switch to ONNX</a>.</p>
+      </div>
+    </section>
+
+    <section id="windows" class="section section-alt">
+      <div class="container">
+        <h2>Windows: espeak-ng Installation</h2>
+        <h3>Step 1: Download the Installer</h3>
+        <p>Go to <a href="https://github.com/espeak-ng/espeak-ng/releases" target="_blank" rel="noopener">github.com/espeak-ng/espeak-ng/releases</a> and download the latest <code>.exe</code> installer (e.g., <code>espeak-ng-X64.msi</code>).</p>
+
+        <h3>Step 2: Install to a Known Location</h3>
+        <p>Install to <code>C:\Program Files\eSpeak NG\</code>. The default location is fine — what matters is that <strong>both</strong> <code>espeak-ng.exe</code> and <code>libespeak-ng.dll</code> end up in the same directory.</p>
+
+        <h3>Step 3: Add to System PATH (Most Common Fix)</h3>
+        <p>This is what most people miss:</p>
+        <ol style="padding-left:24px;margin-bottom:16px;">
+          <li>Press <kbd>Win</kbd> + <kbd>R</kbd>, type <code>sysdm.cpl</code></li>
+          <li>Advanced → Environment Variables</li>
+          <li>Under <strong>System variables</strong>, find <code>Path</code> → Edit</li>
+          <li>Add: <code>C:\Program Files\eSpeak NG</code></li>
+          <li><strong>Restart your terminal</strong> (PowerShell / CMD / VS Code terminal)</li>
+        </ol>
+        <div class="warning"><strong>Restart is required.</strong> PATH changes don't apply to already-open terminals. Close and reopen.</div>
+
+        <h3>Step 4: Verify</h3>
+        <pre><code class="language-bash">espeak-ng --version
+# Should print: eSpeak NG version 1.51+
+
+# Also test from Python:
+python -c "import subprocess; subprocess.run(['espeak-ng', '--version'])"</code></pre>
+
+        <h3>Common Windows Errors</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Error</th><th>Cause</th><th>Fix</th></tr></thead>
+            <tbody>
+              <tr><td><code>'espeak-ng' is not recognized</code></td><td>Not in PATH</td><td>Add to PATH, restart terminal</td></tr>
+              <tr><td><code>DLL load failed</code></td><td>libespeak-ng.dll not found</td><td>Reinstall, check install directory has DLL</td></tr>
+              <tr><td><code>Permission denied</code></td><td>Installed without admin</td><td>Run installer as Administrator</td></tr>
+              <tr><td><code>OSError: espeak-ng not found</code></td><td>Python can't see the binary</td><td>Verify from Python shell (Step 4)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="macos" class="section">
+      <div class="container">
+        <h2>macOS: espeak-ng Installation</h2>
+        <pre><code class="language-bash">brew install espeak-ng</code></pre>
+        <p>If you get <code>Error: espeak-ng has been disabled</code>:</p>
+        <pre><code class="language-bash">brew tap homebrew/core --force
+brew install espeak-ng</code></pre>
+
+        <h3>Apple Silicon (M1/M2/M3) Extra Step</h3>
+        <p>Set this environment variable for PyTorch compatibility:</p>
+        <pre><code class="language-bash">export PYTORCH_ENABLE_MPS_FALLBACK=1</code></pre>
+        <p>Add it to your <code>~/.zshrc</code> to persist:</p>
+        <pre><code class="language-bash">echo 'export PYTORCH_ENABLE_MPS_FALLBACK=1' >> ~/.zshrc</code></pre>
+
+        <h3>Verify</h3>
+        <pre><code class="language-bash">which espeak-ng
+# Should print: /opt/homebrew/bin/espeak-ng  (Apple Silicon)
+# or           /usr/local/bin/espeak-ng       (Intel)
+
+espeak-ng "hello world" --stdout | aplay</code></pre>
+      </div>
+    </section>
+
+    <section id="linux" class="section section-alt">
+      <div class="container">
+        <h2>Linux: espeak-ng Installation</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Distribution</th><th>Command</th></tr></thead>
+            <tbody>
+              <tr><td>Ubuntu / Debian</td><td><code>sudo apt-get install espeak-ng</code></td></tr>
+              <tr><td>Fedora</td><td><code>sudo dnf install espeak-ng</code></td></tr>
+              <tr><td>Arch Linux</td><td><code>sudo pacman -S espeak-ng</code></td></tr>
+              <tr><td>Alpine</td><td><code>apk add espeak-ng</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Verify:</p>
+        <pre><code class="language-bash">espeak-ng --version
+# eSpeak NG version 1.51+</code></pre>
+        <p class="note">Linux is the easiest platform. If you're hitting issues, check that <code>/usr/bin/espeak-ng</code> exists and is executable.</p>
+      </div>
+    </section>
+
+    <section id="workaround" class="section">
+      <div class="container">
+        <h2>The No-Install Workaround: Use ONNX</h2>
+        <p class="section-lead">If you can't or don't want to install espeak-ng, the <strong>kokoro-onnx</strong> package replaces it entirely with a pure-ML phoneme encoder. No native dependencies. No GPL licensing concern.</p>
+        <pre><code class="language-bash">pip install kokoro-onnx soundfile
+
+# That's it. No espeak-ng needed.</code></pre>
+        <pre><code class="language-python">from kokoro_onnx import Kokoro
+kokoro = Kokoro("kokoro-v1.0.onnx", "voices.json")
+samples, sample_rate = kokoro.create(
+    "No espeak-ng was harmed in the making of this audio.",
+    voice="af_sarah", speed=1.0
+)
+import soundfile as sf
+sf.write("output.wav", samples, sample_rate)</code></pre>
+        <p>See the <a href="/onnx/">full ONNX guide</a> for browser usage, quantization options, and Docker deployment.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Built by the community. Not affiliated with hexgrad or the espeak-ng project.</p>
+      <p>espeak-ng is GPL licensed. See <a href="/onnx/">ONNX guide</a> for the GPL-free alternative.</p>
+    </div>
+  </footer>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Fix espeak-ng Install Errors — Windows, macOS, Linux Guide",
+    "description": "Fix espeak-ng installation errors for Kokoro-82M. Step-by-step troubleshooting for Windows PATH issues, macOS Homebrew, Linux packages, and Docker alternatives.",
+    "url": "https://kokoro82m.com/espeak-ng/",
+    "author": {"@type": "Organization", "name": "Kokoro-82M Guide", "url": "https://kokoro82m.com"},
+    "datePublished": "2026-06-13T00:00:00+00:00",
+    "dateModified": "2026-06-13T00:00:00+00:00"
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Kokoro-82M Guide", "item": "https://kokoro82m.com"},
+      {"@type": "ListItem", "position": 2, "name": "espeak-ng Guide", "item": "https://kokoro82m.com/espeak-ng/"}
+    ]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "espeak-ng not found on Windows — how do I fix it?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Add C:\\Program Files\\eSpeak NG to System PATH: Win+R → sysdm.cpl → Advanced → Environment Variables → Edit Path → Add the folder → Restart terminal."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I run Kokoro without espeak-ng?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Use kokoro-onnx which replaces espeak-ng with a pure-ML phoneme encoder. pip install kokoro-onnx soundfile. No native dependencies, no GPL license concern."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "espeak-ng is GPL — is that a problem?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "For most users, no. If you're deploying commercially, the GPL could trigger copyleft obligations. The safe option is kokoro-onnx which avoids espeak-ng entirely with a pure-ML replacement."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="/js/nav.js"></script>
+</body>
+</html>

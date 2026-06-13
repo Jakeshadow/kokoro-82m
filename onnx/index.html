@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Run Kokoro-82M ONNX — Cross-Platform Setup, No espeak-ng</title>
+  <meta name="description" content="Run Kokoro-82M via ONNX — Python, browser (JavaScript), and Docker. No espeak-ng dependency, q4 quantization at 305MB, 2.5x faster than PyTorch on CPU.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"></noscript>
+  <link rel="stylesheet" href="/css/style.css">
+  <meta property="og:title" content="Run Kokoro-82M ONNX — Cross-Platform, No espeak-ng">
+  <meta property="og:description" content="Run Kokoro-82M via ONNX — Python, browser JavaScript, and Docker. No espeak-ng, q4 at 305MB, 2.5x faster than PyTorch on CPU.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://kokoro82m.com/onnx/">
+  <meta property="og:site_name" content="Kokoro-82M Guide">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Run Kokoro-82M ONNX — Cross-Platform, No espeak-ng">
+  <meta name="twitter:description" content="Run Kokoro-82M via ONNX — Python, browser JS, Docker. No espeak-ng, q4 at 305MB.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kokoro82m.com/onnx/">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23f97316' width='100' height='100' rx='20'/%3E%3Ctext x='50' y='68' text-anchor='middle' fill='white' font-size='48' font-family='sans-serif' font-weight='bold'%3EK8%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <nav id="nav" class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">Kokoro82M Guide</a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/espeak-ng/">espeak-ng</a></li>
+        <li><a href="/docker/">Docker</a></li>
+        <li><a href="/onnx/">ONNX</a></li>
+        <li><a href="/#faq">FAQ</a></li>
+      </ul>
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-badge">ONNX Runtime · No espeak-ng</div>
+        <h1>Run Kokoro-82M ONNX — Cross-Platform, No Native Deps</h1>
+        <p class="hero-subtitle">Zero native dependencies. Python, browser JavaScript, or Docker. q4 quantized at 305MB — 2.5x faster than PyTorch on CPU. No espeak-ng, no GPL.</p>
+        <div class="hero-actions">
+          <a href="#python" class="btn btn-primary">Python Setup</a>
+          <a href="#browser" class="btn btn-outline">Browser (JS)</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="why" class="section">
+      <div class="container">
+        <h2>Why ONNX Over Standard Kokoro</h2>
+        <div class="reasons-grid">
+          <div class="reason-card">
+            <h3>1. No espeak-ng</h3>
+            <p>The ONNX version replaces espeak-ng with a pure-ML phoneme encoder. No native dependency to install. No GPL licensing concern. Works identically on Windows, macOS, and Linux.</p>
+          </div>
+          <div class="reason-card">
+            <h3>2. Smaller & Faster on CPU</h3>
+            <p>q4 quantized models are <strong>305MB</strong> (vs 1.6GB for standard). ONNX Runtime's CPU execution provider is 2–2.5x faster than PyTorch on x86 CPUs. If you're running on a laptop without GPU, ONNX is the clear winner.</p>
+          </div>
+          <div class="reason-card">
+            <h3>3. Runs in the Browser</h3>
+            <p><code>kokoro-js</code> + ONNX Runtime Web + Transformers.js = TTS entirely client-side. No server, no API costs, no GPU. Works on any modern browser. Ideal for client-side demos and privacy-sensitive apps.</p>
+          </div>
+          <div class="reason-card">
+            <h3>4. Same Quality, Less Friction</h3>
+            <p>The ONNX models are direct conversions of the original Kokoro weights. Same 54 voices, same 8 languages, same 24kHz output. The ML phoneme encoder is trained to match espeak-ng output exactly.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="python" class="section section-alt">
+      <div class="container">
+        <h2>Python Setup (kokoro-onnx)</h2>
+        <pre><code class="language-bash">pip install kokoro-onnx soundfile</code></pre>
+
+        <pre><code class="language-python">from kokoro_onnx import Kokoro
+
+# Load model (auto-downloads on first run)
+kokoro = Kokoro("kokoro-v1.0.onnx", "voices.json")
+
+# Generate speech
+samples, sample_rate = kokoro.create(
+    "Life is like a box of chocolates — you never know what you're gonna get.",
+    voice="af_sarah",
+    speed=1.0
+)
+
+import soundfile as sf
+sf.write("output.wav", samples, sample_rate)
+print(f"Generated {len(samples)/sample_rate:.1f}s of audio")</code></pre>
+
+        <h3>Quantization Options</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Quantization</th><th>Model Size</th><th>Quality</th><th>Best For</th></tr></thead>
+            <tbody>
+              <tr><td>FP32</td><td>~1.2 GB</td><td>Reference</td><td>Server, max quality</td></tr>
+              <tr><td>FP16</td><td>~620 MB</td><td>Near-lossless</td><td>Desktop, GPU</td></tr>
+              <tr><td>q8</td><td>~610 MB</td><td>Near-lossless</td><td>CPU, balanced</td></tr>
+              <tr><td>q4 (q4f16)</td><td>~305 MB</td><td>Very good</td><td>Laptop, browser, edge</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <pre><code class="language-bash"># Use a specific quantization
+pip install kokoro-onnx
+kokoro-onnx-download --model kokoro-v1.0 --quantization q4f16</code></pre>
+      </div>
+    </section>
+
+    <section id="browser" class="section">
+      <div class="container">
+        <h2>Browser / JavaScript (kokoro-js)</h2>
+        <p class="section-lead">Run Kokoro entirely in the browser via ONNX Runtime Web + Transformers.js. No server. No API key. Works offline after first load.</p>
+
+        <pre><code class="language-bash">npm install kokoro-js</code></pre>
+
+        <pre><code class="language-javascript">import { KokoroTTS } from "kokoro-js";
+
+// Load model (q4: ~305MB download, cached after first load)
+const tts = await KokoroTTS.from_pretrained(
+  "onnx-community/Kokoro-82M-ONNX",
+  { dtype: "q4" }
+);
+
+// Generate speech
+const audio = await tts.generate(
+  "Kokoro is running right here in your browser — no server, no API key, no latency.",
+  { voice: "af_heart" }
+);
+
+// Play it
+const blob = new Blob([audio.audioData], { type: "audio/wav" });
+const url = URL.createObjectURL(blob);
+new Audio(url).play();</code></pre>
+
+        <h3>Browser Demo Skeleton</h3>
+        <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;&lt;meta charset="UTF-8"&gt;&lt;/head&gt;
+&lt;body&gt;
+  &lt;textarea id="text"&gt;Type something...&lt;/textarea&gt;
+  &lt;select id="voice"&gt;
+    &lt;option value="af_heart"&gt;Heart (American Female)&lt;/option&gt;
+    &lt;option value="am_adam"&gt;Adam (American Male)&lt;/option&gt;
+    &lt;option value="bf_emma"&gt;Emma (British Female)&lt;/option&gt;
+  &lt;/select&gt;
+  &lt;button id="speak"&gt;Speak&lt;/button&gt;
+  &lt;audio id="player" controls&gt;&lt;/audio&gt;
+
+  &lt;script type="module"&gt;
+    import { KokoroTTS } from "https://cdn.jsdelivr.net/npm/kokoro-js/+esm";
+    const tts = await KokoroTTS.from_pretrained(
+      "onnx-community/Kokoro-82M-ONNX", { dtype: "q4" }
+    );
+    document.getElementById("speak").onclick = async () => {
+      const text = document.getElementById("text").value;
+      const voice = document.getElementById("voice").value;
+      const result = await tts.generate(text, { voice });
+      const blob = new Blob([result.audioData], { type: "audio/wav" });
+      document.getElementById("player").src = URL.createObjectURL(blob);
+    };
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        <p class="note"><strong>First load:</strong> ~305MB model download (q4). Subsequent loads use browser cache. For production, host the model files on your own CDN and set <code>KokoroTTS.from_pretrained("https://your-cdn.com/models", ...)</code>.</p>
+      </div>
+    </section>
+
+    <section id="docker-onnx" class="section section-alt">
+      <div class="container">
+        <h2>Docker: ONNX-Specific Image</h2>
+        <p>The ONNX community maintains a Docker image with ONNX Runtime pre-installed:</p>
+        <pre><code class="language-bash">docker run -p 8880:8880 ghcr.io/onnx-community/kokoro-onnx-server:latest</code></pre>
+
+        <pre><code class="language-bash"># Test it
+curl -X POST http://localhost:8880/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "kokoro-onnx",
+    "input": "ONNX plus Docker — serverless-grade portability.",
+    "voice": "af_heart"
+  }' --output speech.mp3</code></pre>
+      </div>
+    </section>
+
+    <section id="comparison" class="section">
+      <div class="container">
+        <h2>ONNX vs Standard Kokoro: Performance</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Metric</th><th>Standard (PyTorch)</th><th>ONNX (q4)</th><th>ONNX (FP16)</th></tr></thead>
+            <tbody>
+              <tr><td>Model size</td><td>1.6 GB</td><td>305 MB</td><td>620 MB</td></tr>
+              <tr><td>CPU latency (first word)</td><td>~800ms</td><td>~350ms</td><td>~500ms</td></tr>
+              <tr><td>CPU throughput</td><td>1x</td><td>~2.5x</td><td>~1.8x</td></tr>
+              <tr><td>GPU throughput</td><td>1x</td><td>~1.2x</td><td>~1.1x</td></tr>
+              <tr><td>Dependencies</td><td>espeak-ng + torch</td><td>onnxruntime only</td><td>onnxruntime only</td></tr>
+              <tr><td>Browser support</td><td>No</td><td>Yes (ORT Web)</td><td>Yes (ORT Web)</td></tr>
+              <tr><td>License concern</td><td>GPL (espeak-ng)</td><td>None</td><td>None</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note"><strong>Bottom line:</strong> For CPU use, ONNX q4 is the clear winner — 2.5x faster and 5x smaller. For GPU servers, PyTorch still edges ahead slightly. For browsers, ONNX is the only option.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Built by the community. ONNX models by <a href="https://huggingface.co/onnx-community" target="_blank" rel="noopener">ONNX Community</a>.</p>
+      <p>Apache 2.0. No GPL dependencies. Runs everywhere.</p>
+    </div>
+  </footer>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Run Kokoro-82M ONNX — Cross-Platform Setup, No espeak-ng",
+    "description": "Run Kokoro-82M via ONNX — Python, browser JavaScript, and Docker. No espeak-ng dependency, q4 quantization at 305MB, 2.5x faster than PyTorch on CPU.",
+    "url": "https://kokoro82m.com/onnx/",
+    "author": {"@type": "Organization", "name": "Kokoro-82M Guide", "url": "https://kokoro82m.com"},
+    "datePublished": "2026-06-13T00:00:00+00:00",
+    "dateModified": "2026-06-13T00:00:00+00:00"
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Kokoro-82M Guide", "item": "https://kokoro82m.com"},
+      {"@type": "ListItem", "position": 2, "name": "ONNX Setup", "item": "https://kokoro82m.com/onnx/"}
+    ]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Can I run Kokoro-82M in the browser?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Use kokoro-js with ONNX Runtime Web. Import KokoroTTS from kokoro-js, load the q4 quantized model (~305MB), and generate speech entirely client-side — no server, no API key."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Kokoro ONNX need espeak-ng?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The ONNX version replaces espeak-ng with a pure-ML phoneme encoder. Zero native dependencies, no GPL licensing concern. pip install kokoro-onnx is all you need."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the smallest Kokoro model for deployment?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The q4 quantized ONNX model is ~305MB — 5x smaller than the standard 1.6GB PyTorch model. It runs 2.5x faster on CPU and works in the browser via ONNX Runtime Web."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="/js/nav.js"></script>
+</body>
+</html>

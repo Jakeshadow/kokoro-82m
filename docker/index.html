@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deploy Kokoro-FastAPI with Docker — Production TTS Server</title>
+  <meta name="description" content="Deploy Kokoro-82M as a production TTS server with Docker. OpenAI-compatible API, CPU/GPU/Apple Silicon images, Compose, voice mixing, HF caching.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"></noscript>
+  <link rel="stylesheet" href="/css/style.css">
+  <meta property="og:title" content="Deploy Kokoro-FastAPI with Docker — Production TTS Server">
+  <meta property="og:description" content="Deploy Kokoro-82M as a production TTS server. OpenAI-compatible API, CPU/GPU/Apple Silicon images, Docker Compose, voice mixing.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://kokoro82m.com/docker/">
+  <meta property="og:site_name" content="Kokoro-82M Guide">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Deploy Kokoro-FastAPI with Docker — Production TTS Server">
+  <meta name="twitter:description" content="OpenAI-compatible TTS API. CPU/GPU/Apple Silicon images, Docker Compose, voice mixing, HF caching.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kokoro82m.com/docker/">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23f97316' width='100' height='100' rx='20'/%3E%3Ctext x='50' y='68' text-anchor='middle' fill='white' font-size='48' font-family='sans-serif' font-weight='bold'%3EK8%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <nav id="nav" class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">Kokoro82M Guide</a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/espeak-ng/">espeak-ng</a></li>
+        <li><a href="/docker/">Docker</a></li>
+        <li><a href="/onnx/">ONNX</a></li>
+        <li><a href="/#faq">FAQ</a></li>
+      </ul>
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-badge">Kokoro-FastAPI · Docker</div>
+        <h1>Deploy Kokoro-82M with Docker — Production TTS Server</h1>
+        <p class="hero-subtitle">OpenAI-compatible /v1/audio/speech endpoint. Pre-built images for CPU, NVIDIA GPU, AMD ROCm, and Apple Silicon. One docker run command to production.</p>
+        <div class="hero-actions">
+          <a href="#quickstart" class="btn btn-primary">Quick Start</a>
+          <a href="#compose" class="btn btn-outline">Docker Compose</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="quickstart" class="section">
+      <div class="container">
+        <h2>Quick Start: One Command</h2>
+        <p class="section-lead">Pick your hardware and run. Kokoro-FastAPI listens on port 8880 with an OpenAI-compatible endpoint.</p>
+
+        <h3>CPU (Any Machine)</h3>
+        <pre><code class="language-bash">docker run -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-cpu:latest</code></pre>
+
+        <h3>NVIDIA GPU</h3>
+        <pre><code class="language-bash">docker run --gpus all -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-gpu:latest</code></pre>
+
+        <h3>AMD ROCm</h3>
+        <pre><code class="language-bash">docker run --device /dev/kfd --device /dev/dri -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-rocm:latest</code></pre>
+
+        <h3>Apple Silicon (M1/M2/M3)</h3>
+        <pre><code class="language-bash">docker run -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-mps:latest</code></pre>
+
+        <h3>Test the API</h3>
+        <pre><code class="language-bash">curl -X POST http://localhost:8880/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"model": "kokoro", "input": "Kokoro is running via FastAPI.", "voice": "af_heart"}' \
+  --output speech.mp3</code></pre>
+        <p class="note">The API is OpenAI-compatible. Any client that works with OpenAI's TTS endpoint works with Kokoro-FastAPI — just change the base URL.</p>
+      </div>
+    </section>
+
+    <section id="compose" class="section section-alt">
+      <div class="container">
+        <h2>Docker Compose (Recommended for Production)</h2>
+        <pre><code class="language-yaml"># docker-compose.yml
+services:
+  kokoro:
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:latest
+    ports:
+      - "8880:8880"
+    environment:
+      - DEFAULT_VOICE=af_heart
+      - DEFAULT_LANG=a
+    restart: unless-stopped
+    volumes:
+      - ./kokoro_model:/root/.cache/huggingface</code></pre>
+
+        <pre><code class="language-bash">docker compose up -d</code></pre>
+
+        <h3>GPU Compose Variant</h3>
+        <pre><code class="language-yaml">services:
+  kokoro-gpu:
+    image: ghcr.io/remsky/kokoro-fastapi-gpu:latest
+    ports:
+      - "8880:8880"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - DEFAULT_VOICE=af_heart
+      - DEFAULT_LANG=a
+    restart: unless-stopped</code></pre>
+      </div>
+    </section>
+
+    <section id="features" class="section">
+      <div class="container">
+        <h2>API Features</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Feature</th><th>Endpoint / Parameter</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td>OpenAI-compatible TTS</td><td><code>POST /v1/audio/speech</code></td><td>Drop-in replacement for OpenAI TTS</td></tr>
+              <tr><td>Voice mixing</td><td><code>voice</code> + <code>voice2</code></td><td>Blend two voices with weighted ratio</td></tr>
+              <tr><td>Per-word timestamps</td><td><code>response_format=timestamps</code></td><td>Word-level start/end times</td></tr>
+              <tr><td>Phoneme output</td><td><code>POST /v1/audio/phonemes</code></td><td>Get phoneme breakdown for any text</td></tr>
+              <tr><td>Multiple formats</td><td><code>response_format</code></td><td>mp3, wav, opus, aac, flac</td></tr>
+              <tr><td>Speed control</td><td><code>speed</code></td><td>0.5 – 2.0</td></tr>
+              <tr><td>Health check</td><td><code>GET /health</code></td><td>Readiness probe for orchestration</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="cache" class="section section-alt">
+      <div class="container">
+        <h2>Fix HF 429 Errors: Local Model Caching</h2>
+        <p class="section-lead">In cloud environments (GCP, AWS, Fly.io), every new container hits HuggingFace and triggers rate limits. Pre-download the model once and mount it as a volume.</p>
+
+        <h3>Step 1: Download Model Files (Run Once)</h3>
+        <pre><code class="language-bash">pip install huggingface_hub
+python -c "
+from huggingface_hub import snapshot_download
+snapshot_download('hexgrad/Kokoro-82M', local_dir='./kokoro_model')
+"</code></pre>
+
+        <h3>Step 2: Mount in Docker</h3>
+        <pre><code class="language-yaml">services:
+  kokoro:
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:latest
+    ports:
+      - "8880:8880"
+    environment:
+      - HF_HOME=/data/models
+      - HF_HUB_OFFLINE=1
+    volumes:
+      - ./kokoro_model:/data/models/hub
+    restart: unless-stopped</code></pre>
+
+        <div class="note"><strong>HF_HUB_OFFLINE=1</strong> prevents the container from ever calling HuggingFace. Combined with a cached model volume, your deployment is fully self-contained.</div>
+      </div>
+    </section>
+
+    <section id="troubleshooting" class="section">
+      <div class="container">
+        <h2>Common Docker Issues</h2>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary>Container starts but curl returns "connection refused"</summary>
+            <div class="faq-answer">
+              <p>The model takes 10–30 seconds to download on first run. Check logs:</p>
+              <pre><code class="language-bash">docker logs kokoro</code></pre>
+              <p>Wait for <code>Uvicorn running on http://0.0.0.0:8880</code>. With cached models, startup is under 5 seconds.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary>GPU not detected inside container</summary>
+            <div class="faq-answer">
+              <p>Check: <code>docker run --gpus all nvidia/cuda:12.4.0-base-ubuntu22.04 nvidia-smi</code></p>
+              <p>If that fails, install <a href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html" target="_blank" rel="noopener">NVIDIA Container Toolkit</a>:</p>
+              <pre><code class="language-bash"># Ubuntu
+sudo apt-get install -y nvidia-container-toolkit
+sudo systemctl restart docker</code></pre>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary>High memory usage / OOM</summary>
+            <div class="faq-answer">
+              <p>Kokoro-FastAPI loads the model into RAM. For CPU images, budget <strong>2–3 GB</strong>. For GPU images, <strong>2 GB VRAM</strong>. Add Docker memory limits:</p>
+              <pre><code class="language-yaml">services:
+  kokoro:
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:latest
+    deploy:
+      resources:
+        limits:
+          memory: 4G</code></pre>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary>Audio quality differs from Python pipeline</summary>
+            <div class="faq-answer">
+              <p>Kokoro-FastAPI uses the same model weights but may apply different default post-processing. Check the <code>response_format</code> — <code>wav</code> is lossless. <code>mp3</code> uses LAME encoding at 192kbps by default, which is transparent for speech.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Built by the community. Kokoro-FastAPI is maintained by <a href="https://github.com/remsky/Kokoro-FastAPI" target="_blank" rel="noopener">remsky</a>.</p>
+      <p>Docker images: <a href="https://github.com/remsky/Kokoro-FastAPI/pkgs/container/kokoro-fastapi-cpu" target="_blank" rel="noopener">GHCR</a>. Apache 2.0 licensed.</p>
+    </div>
+  </footer>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Deploy Kokoro-FastAPI with Docker — Production TTS Server",
+    "description": "Deploy Kokoro-82M as a production TTS server with Docker. OpenAI-compatible API, CPU/GPU/Apple Silicon images, Docker Compose, voice mixing, HF caching.",
+    "url": "https://kokoro82m.com/docker/",
+    "author": {"@type": "Organization", "name": "Kokoro-82M Guide", "url": "https://kokoro82m.com"},
+    "datePublished": "2026-06-13T00:00:00+00:00",
+    "dateModified": "2026-06-13T00:00:00+00:00"
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Kokoro-82M Guide", "item": "https://kokoro82m.com"},
+      {"@type": "ListItem", "position": 2, "name": "Docker Deployment", "item": "https://kokoro82m.com/docker/"}
+    ]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I deploy Kokoro-82M with Docker for production?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use the pre-built Kokoro-FastAPI Docker images: docker run -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-cpu:latest for CPU, or kokoro-fastapi-gpu:latest for NVIDIA GPU, kokoro-fastapi-mps:latest for Apple Silicon. The API is OpenAI-compatible at /v1/audio/speech."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I fix 429 errors when deploying Kokoro Docker on cloud?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Pre-download HuggingFace model files locally with huggingface_hub.snapshot_download, mount them as a Docker volume, and set HF_HUB_OFFLINE=1 to prevent the container from calling HuggingFace at runtime."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Kokoro Docker GPU not detected — how to fix?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Install NVIDIA Container Toolkit: sudo apt-get install nvidia-container-toolkit, then sudo systemctl restart docker. Verify with: docker run --gpus all nvidia/cuda:12.4.0-base-ubuntu22.04 nvidia-smi."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
+  <script src="/js/nav.js"></script>
+</body>
+</html>
